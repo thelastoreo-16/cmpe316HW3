@@ -1,168 +1,219 @@
-# HW 2
+# HW 3
 
 ## Problem 1
 
-My source code:
+My testbench:
 
 ```verilog
-//Filename: hw2_1a
-module hw2_1a(
-    input wire a,
-    input wire b,
-    input wire c,
-    output reg u,
-    output reg v
+`timescale 1ns / 1ps
+
+module tb1;
+    reg a,b,clk;
+    wire [1:0] u,v;
+       
+    DUT testDUT(
+        .u(u),
+        .v(v),
+        .a(a),
+        .b(b),
+        .clk(clk)  
     );
     
-    //behavioral
-    always@(*)begin
-    
-        //111 = 01
-        if (a==1 && b==1 && c==1)begin
-            u = 0;
-            v = 1;
-        end
-        
-        //110 = 11
-        else if (a==1 && b==1 && c==0)begin
-            u = 1;
-            v = 1;
-        end 
-        
-        //100 = 00
-        else if (a==1 && b==0 && c==0)begin
-            u = 0;
-            v = 0;
-        end
-        
-        else begin
-            u = 0;
-        end
+    always begin
+        #5 clk = ~clk;
     end
     
+    initial begin
+        clk = 0;
+        
+        a = 0;
+        b = 0;
+        #10;
+        
+        a = 0;
+        b = 1; 
+        #10
+        
+        a = 1;
+        b = 0;
+        #10;
+        
+        a = 1;
+        b = 1;
+        #10;
+          
+        $finish;
+    end
+
+always @ (posedge clk)begin
+    $strobe("at time=%0t: a=%b b=%b  _u = %b, _v = %b, u = %b, v = %b", $time, a, b, testDUT._u, testDUT._v, u, v);
+end
+    
 endmodule
+```
+
+output:
+```
+at time=5000: a=0 b=0  _u = 00, _v = xx, u = 00, v = xx
+at time=15000: a=0 b=1  _u = 1x, _v = 01, u = 1x, v = 01
+at time=25000: a=1 b=0  _u = 00, _v = 10, u = 00, v = 10
+at time=35000: a=1 b=1  _u = 00, _v = 10, u = 00, v = 10
 ```
 
 ## Problem 2
 
-My source code:
+My testbench:
 
 ```verilog
-//Filename: hw2_2
-module hw2_2(
-    //ports list
-    input clk,
-    input rst,
-    input load_shift_n,
-    input [2:0] loadValue,
-    output [2:0] q,
-    output zeroFlag
+`timescale 1ns / 1ps
+
+module tb1;
+    reg a,b,clk;
+    wire [1:0] u,v;
+       
+    DUT testDUT(
+        .u(u),
+        .v(v),
+        .a(a),
+        .b(b),
+        .clk(clk)  
     );
     
-    //3 bit register
-    reg [2:0] reg_q ;
-    
-    //zero flag
-    assign zeroFlag = (reg_q == 3'b000);
-    
-    //triggered by the positive edge of the clock
-    always@(posedge clk) begin
-    
-        //if the restart = 1
-        if (rst) begin
-            reg_q <= 3'b000; //load the register with 0s
-        end
-        else begin
-            if(load_shift_n)begin
-                reg_q <= loadValue; //load the value into the register
-            end
-            else begin
-                reg_q <= {1'b0, reg_q[2:1]}; //shift to the right & add a 0 
-            end
-        end
+    always begin
+        #5 clk = ~clk;
     end
     
-    //assigns the register valye to q
-    assign q = reg_q;
+    initial begin
+        clk = 0;
+        
+        a = 0;
+        b = 0;
+        #10;
+        $display("display at time=%0t: a=%b b=%b  _u = %b, _v = %b, u = %b, v = %b", $time, a, b, testDUT._u, testDUT._v, u, v);
+        
+        
+        
+        a = 0;
+        b = 1; 
+        #10
+        $display("display at time=%0t: a=%b b=%b  _u = %b, _v = %b, u = %b, v = %b", $time, a, b, testDUT._u, testDUT._v, u, v);
+        
+        a = 1;
+        b = 0;
+        #10;
+        $display("display at time=%0t: a=%b b=%b  _u = %b, _v = %b, u = %b, v = %b", $time, a, b, testDUT._u, testDUT._v, u, v);
+        
+        a = 1;
+        b = 1;
+        #10;
+        $display("display at time=%0t: a=%b b=%b  _u = %b, _v = %b, u = %b, v = %b", $time, a, b, testDUT._u, testDUT._v, u, v);
+          
+        $finish;
+    end
 
+always @ (posedge clk)begin
+    $display("display at time=%0t: a=%b b=%b  _u = %b, _v = %b, u = %b, v = %b", $time, a, b, testDUT._u, testDUT._v, u, v);
+    $strobe("strobe   at time=%0t: a=%b b=%b  _u = %b, _v = %b, u = %b, v = %b \n", $time, a, b, testDUT._u, testDUT._v, u, v);
+end
+    
 endmodule
+
 ```
+
+output:
+```
+display at time=5000: a=0 b=0  _u = xx, _v = xx, u = xx, v = xx
+strobe   at time=5000: a=0 b=0  _u = 00, _v = xx, u = 00, v = xx 
+
+display at time=10000: a=0 b=0  _u = 00, _v = xx, u = 00, v = xx
+display at time=15000: a=0 b=1  _u = 00, _v = xx, u = 00, v = xx
+strobe   at time=15000: a=0 b=1  _u = 1x, _v = 01, u = 1x, v = 01 
+
+display at time=20000: a=0 b=1  _u = 1x, _v = 01, u = 1x, v = 01
+display at time=25000: a=1 b=0  _u = 1x, _v = 01, u = 1x, v = 01
+strobe   at time=25000: a=1 b=0  _u = 00, _v = 10, u = 00, v = 10 
+
+display at time=30000: a=1 b=0  _u = 00, _v = 10, u = 00, v = 10
+display at time=35000: a=1 b=1  _u = 00, _v = 10, u = 00, v = 10
+strobe   at time=35000: a=1 b=1  _u = 00, _v = 10, u = 00, v = 10 
+```
+
 ## Problem 3
 
-My source code:
+My testbench:
 
 ```verilog
-//Filename: hw2_3
-module hw2_3(
-    input [3:0] dataInA,
-    input [3:0] dataInB,
-    input s,
-    output reg [3:0] result
+`timescale 1ns / 1ps
+
+module tb1;
+    reg a,b,clk;
+    wire [1:0] u,v;
+       
+    DUT testDUT(
+        .u(u),
+        .v(v),
+        .a(a),
+        .b(b),
+        .clk(clk)  
     );
     
-    //pick a combinational logic based on the selected signal
-    always @(*) begin
-        case (s)
-            //use the bitwise logical operations?
-            3'b000: result = dataInA & dataInB; // AND operation
-            3'b001: result = dataInA | dataInB; // OR operation
-            3'b010: result = ~(dataInA & dataInB); // NAND operation
-            3'b011: result = ~(dataInA | dataInB); // NOR operation
-            3'b100: result = dataInA ^ dataInB; // XOR operation
-            default: result = 4'b0000; // Default case to handle unexpected values of s
-        endcase
+    always begin
+        #5 clk = ~clk;
     end
+    
+    initial begin
+        clk = 0;
+        
+        a = 0;
+        b = 0;
+        #10;
+        $display("display at time=%0t: a=%b b=%b u = %b, v = %b", $time, a, b, u, v);
+        
+        
+        
+        a = 0;
+        b = 1; 
+        #10
+        $display("display at time=%0t: a=%b b=%b u = %b, v = %b", $time, a, b, u, v);
+        
+        a = 1;
+        b = 0;
+        #10;
+        $display("display at time=%0t: a=%b b=%b u = %b, v = %b", $time, a, b, u, v);
+        
+        a = 1;
+        b = 1;
+        #10;
+        $display("display at time=%0t: a=%b b=%b u = %b, v = %b", $time, a, b, u, v);
+          
+        $finish;
+    end
+
+always @ (posedge clk)begin
+    $display("display at time=%0t: a=%b b=%b  u = %b, v = %b", $time, a, b, u, v);
+    $monitor("monitor at time=%0t: a=%b b=%b  u = %b, v = %b \n", $time, a, b, u, v);
+end
     
 endmodule
+
 ```
 
-## Problem 4
-
-My source code:
-
-```verilog
-//Filename: hw2_4
-module hw2_4(
-    //port list
-    input clk,
-    input [3:0] dataInA,
-    input [3:0] dataInB,
-    input [2:0] s,
-    output reg [3:0] q //output of the register
-    );
-    
-    reg [3:0] result;
-    
-    //pick a combinational logic based on the select signal
-    always @(*) begin
-        case (s)
-            //use the bitwise logical operations?
-            3'b000: result = dataInA & dataInB; // AND operation
-            3'b001: result = dataInA | dataInB; // OR operation
-            3'b010: result = ~(dataInA & dataInB); // NAND operation
-            3'b011: result = ~(dataInA | dataInB); // NOR operation
-            3'b100: result = dataInA ^ dataInB; // XOR operation
-            default: result = 4'b0000; // Default case to handle unexpected values of s
-        endcase
-    end
-    
-    // Registered output logic
-    always @(posedge clk) begin
-        q <= result; // Register the result output at each clock edge
-    end
-    
-endmodule
+output:
 ```
+display at time=5000: a=0 b=0  u = 00, v = 10
+monitor at time=5000: a=0 b=0  u = 00, v = 10 
 
+display at time=10000: a=0 b=0 u = 00, v = 10
+monitor at time=10000: a=0 b=1  u = 00, v = 10 
 
+display at time=15000: a=0 b=1  u = 00, v = 10
+display at time=20000: a=0 b=1 u = 00, v = 10
+monitor at time=20000: a=1 b=0  u = 00, v = 10 
 
-## Appendix 
+display at time=25000: a=1 b=0  u = 00, v = 10
+display at time=30000: a=1 b=0 u = 00, v = 10
+monitor at time=30000: a=1 b=1  u = 00, v = 10 
 
-
-Note that on many linux systems a document converter, pandoc, can be used to render this file as an html file, which can with further effort be converted to other formats including PDF.
-
-```bash
-pandoc template.md -o template.html --standalone
+display at time=35000: a=1 b=1  u = 00, v = 10
+display at time=40000: a=1 b=1 u = 00, v = 10
 ```
-
-
